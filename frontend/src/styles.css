@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  min-height: 100vh;
+  background: #f4f7fb;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.input {
+  width: 100%;
+  border-radius: 0.75rem;
+  border: 1px solid #e2e8f0;
+  padding: 0.75rem 1rem;
+  outline: none;
+}
+
+.input:focus {
+  border-color: #0891b2;
+  box-shadow: 0 0 0 3px rgb(8 145 178 / 0.12);
+}

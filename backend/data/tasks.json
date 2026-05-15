@@ -1,0 +1,32 @@
+[
+  {
+    "id": "task-demo-1",
+    "title": "情绪分类样例",
+    "text": "这家店的服务很热情，但等待时间有点长。",
+    "schema": [
+      {
+        "name": "sentiment",
+        "label": "整体情绪",
+        "type": "select",
+        "options": [
+          "正向",
+          "中性",
+          "负向"
+        ],
+        "required": true
+      },
+      {
+        "name": "reason",
+        "label": "判断依据",
+        "type": "textarea",
+        "required": true
+      }
+    ],
+    "status": "pending_annotation",
+    "annotation": null,
+    "aiReview": null,
+    "review": null,
+    "createdAt": "2026-05-15T00:00:00.000Z",
+    "updatedAt": "2026-05-15T00:00:00.000Z"
+  }
+]
