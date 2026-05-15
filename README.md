@@ -66,7 +66,21 @@ No password is required. Use username `demo` and select one of the roles:
 
 ## Screenshots
 
-Screenshots can be placed under `docs/images/`.
+### Login Page
+
+![Login Page](docs/images/login.png)
+
+### Admin Dashboard
+
+![Admin Dashboard](docs/images/admin-dashboard.png)
+
+### Reviewer AI Pre-review
+
+![Reviewer AI Pre-review](docs/images/reviewer-ai-review.png)
+
+### Review Result
+
+![Review Result](docs/images/review-result.png)
 
 ## More Docs
 

@@ -96,12 +96,21 @@ docker compose up --build
 
 ## 项目截图
 
-截图可放在 `docs/images/` 目录，建议包含以下页面：
+### 登录页
 
-- 登录页
-- 管理员 dashboard 与任务创建页
-- 标注员动态表单页
-- 审核员 AI 预审卡片页
+![登录页](docs/images/login.png)
+
+### 管理员 Dashboard
+
+![管理员 Dashboard](docs/images/admin-dashboard.png)
+
+### 审核员 AI 预审
+
+![审核员 AI 预审](docs/images/reviewer-ai-review.png)
+
+### 审核结果
+
+![审核结果](docs/images/review-result.png)
 
 ## Schema 示例
 
