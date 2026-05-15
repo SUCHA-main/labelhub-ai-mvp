@@ -12,6 +12,15 @@ labelhub-ai-mvp/
   README_CN.md
 ```
 
+## 技术栈
+
+| 模块 | 技术 |
+| --- | --- |
+| 前端 | React、Vite、Tailwind CSS |
+| 后端 | Node.js、Express |
+| 数据存储 | JSON 文件 |
+| 部署 | Docker、docker-compose、Nginx |
+
 ## 本地启动
 
 要求：Node.js 18+。
@@ -48,7 +57,7 @@ docker compose up --build
 
 后端 JSON 数据文件挂载在 `backend/data/tasks.json`，重启容器后数据仍保留在本地文件中。
 
-## 登录角色
+## 演示账号
 
 登录页无需真实密码，选择角色即可进入对应工作台：
 
@@ -57,6 +66,8 @@ docker compose up --build
 | admin | 创建任务、查看全部任务和 dashboard |
 | annotator | 查看待标注/被驳回任务，按 schema 填写动态表单并提交 |
 | reviewer | 查看待审核任务，查看 AI 质检结果，选择通过或驳回 |
+
+推荐演示用户名：`demo`。
 
 ## 演示流程
 
@@ -75,6 +86,22 @@ docker compose up --build
 4. AI 质检：标注提交后后端调用 `mockAIReview`，返回风险等级、置信度、问题提示和修改建议。
 5. 人工审核：审核员可以通过或驳回任务，并填写审核意见。
 6. Dashboard：展示任务总数、待标注数、待审核数、已通过数、已驳回数、通过率、AI 风险提示数和待处理任务数。
+
+## 功能亮点
+
+- 角色清晰：管理员、标注员、审核员三类视角覆盖真实标注协作流程。
+- 表单灵活：任务 schema 可配置，适合情绪分类、商品标题质量、内容安全等不同标注场景。
+- AI 辅助审核：提交标注后立即给出风险等级、置信度、问题提示和修改建议。
+- 指标可视化：dashboard 能快速呈现任务进度、通过率和 AI 风险提示数。
+
+## 项目截图
+
+截图可放在 `docs/images/` 目录，建议包含以下页面：
+
+- 登录页
+- 管理员 dashboard 与任务创建页
+- 标注员动态表单页
+- 审核员 AI 预审卡片页
 
 ## Schema 示例
 
