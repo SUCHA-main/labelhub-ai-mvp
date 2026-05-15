@@ -7,6 +7,12 @@ const statusText = {
   rejected: '已驳回'
 };
 
+const riskStyle = {
+  低: 'border-emerald-100 bg-emerald-50 text-emerald-950',
+  中: 'border-amber-100 bg-amber-50 text-amber-950',
+  高: 'border-red-100 bg-red-50 text-red-950'
+};
+
 const schemaExample = JSON.stringify(
   [
     {
@@ -190,11 +196,14 @@ function Dashboard({ data }) {
     ['待标注', data?.pendingAnnotation ?? 0],
     ['待审核', data?.pendingReview ?? 0],
     ['已通过', data?.approved ?? 0],
-    ['已驳回', data?.rejected ?? 0]
+    ['已驳回', data?.rejected ?? 0],
+    ['通过率', `${data?.passRate ?? 0}%`],
+    ['AI 风险提示数', data?.aiRiskCount ?? 0],
+    ['待处理任务数', data?.pendingTotal ?? 0]
   ];
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
       {cards.map(([label, value]) => (
         <div key={label} className="rounded-2xl bg-white p-5 shadow-sm">
           <p className="text-sm text-slate-500">{label}</p>
@@ -432,11 +441,32 @@ function TaskHeader({ task }) {
 
 function AIReview({ review, compact = false }) {
   if (!review) return null;
+  const riskLevel = review.riskLevel || '低';
+  const possibleIssue = review.possibleIssue || review.risks?.join('；') || '暂无问题提示';
+  const suggestion = review.suggestion || review.suggestions?.join('；') || '暂无修改建议';
+
   return (
-    <div className={`mt-5 rounded-2xl border border-cyan-100 bg-cyan-50 p-4 text-sm text-cyan-950 ${compact ? 'mt-3' : ''}`}>
-      <p className="font-semibold">AI 质检置信度：{Math.round(review.confidence * 100)}%</p>
-      <p className="mt-2">风险提示：{review.risks?.join('；')}</p>
-      {!compact && <p className="mt-2">修改建议：{review.suggestions?.join('；')}</p>}
+    <div className={`mt-5 rounded-2xl border p-4 text-sm ${riskStyle[riskLevel] || riskStyle['低']} ${compact ? 'mt-3' : ''}`}>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="font-semibold">AI 预审结果</p>
+        <span className="rounded-full bg-white/70 px-3 py-1 text-xs font-semibold">风险等级：{riskLevel}</span>
+      </div>
+      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        <div className="rounded-xl bg-white/65 p-3">
+          <p className="text-xs opacity-70">置信度</p>
+          <p className="mt-1 text-2xl font-bold">{Math.round((review.confidence || 0) * 100)}%</p>
+        </div>
+        <div className="rounded-xl bg-white/65 p-3">
+          <p className="text-xs opacity-70">问题提示</p>
+          <p className="mt-1 font-medium">{possibleIssue}</p>
+        </div>
+      </div>
+      {!compact && (
+        <div className="mt-3 rounded-xl bg-white/65 p-3">
+          <p className="text-xs opacity-70">修改建议</p>
+          <p className="mt-1 font-medium">{suggestion}</p>
+        </div>
+      )}
     </div>
   );
 }

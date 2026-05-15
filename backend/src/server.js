@@ -32,12 +32,19 @@ app.post('/api/login', (req, res) => {
 
 app.get('/api/dashboard', async (_req, res) => {
   const tasks = await readTasks();
+  const approved = tasks.filter((task) => task.status === 'approved').length;
+  const rejected = tasks.filter((task) => task.status === 'rejected').length;
+  const reviewed = approved + rejected;
+  const aiRiskCount = tasks.filter((task) => ['中', '高'].includes(task.aiReview?.riskLevel)).length;
   res.json({
     total: tasks.length,
     pendingAnnotation: tasks.filter((task) => task.status === 'pending_annotation').length,
     pendingReview: tasks.filter((task) => task.status === 'pending_review').length,
-    approved: tasks.filter((task) => task.status === 'approved').length,
-    rejected: tasks.filter((task) => task.status === 'rejected').length
+    approved,
+    rejected,
+    passRate: reviewed === 0 ? 0 : Math.round((approved / reviewed) * 100),
+    aiRiskCount,
+    pendingTotal: tasks.filter((task) => ['pending_annotation', 'pending_review', 'rejected'].includes(task.status)).length
   });
 });
 
