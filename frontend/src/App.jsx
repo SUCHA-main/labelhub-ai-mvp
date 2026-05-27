@@ -7,6 +7,13 @@ const statusText = {
   rejected: '已驳回'
 };
 
+const statusIcon = {
+  pending_annotation: '📝',
+  pending_review: '🔍',
+  approved: '✅',
+  rejected: '❌'
+};
+
 const riskStyle = {
   低: 'border-emerald-100 bg-emerald-50 text-emerald-950',
   中: 'border-amber-100 bg-amber-50 text-amber-950',
@@ -101,30 +108,43 @@ function LoginPage({ onLogin }) {
           <p className="mt-5 max-w-2xl text-lg text-slate-300">
             一个可运行的 AI 辅助数据标注平台原型，覆盖任务创建、动态标注表单、AI 质检和人工审核闭环。
           </p>
+          <div className="mt-8 grid gap-3 sm:grid-cols-3">
+            {[
+              ['📋', '动态表单', 'Schema 驱动，适配多场景'],
+              ['🤖', 'AI 预审', '风险等级 + 置信度 + 建议'],
+              ['👥', '三角色协作', '管理 · 标注 · 审核分离']
+            ].map(([icon, title, desc]) => (
+              <div key={title} className="rounded-2xl border border-slate-700/60 bg-slate-900/60 px-4 py-3">
+                <p className="text-lg">{icon}</p>
+                <p className="mt-1 text-sm font-semibold text-slate-100">{title}</p>
+                <p className="mt-0.5 text-xs text-slate-400">{desc}</p>
+              </div>
+            ))}
+          </div>
         </section>
 
         <form onSubmit={submit} className="rounded-3xl bg-white p-6 text-slate-900 shadow-2xl">
           <h2 className="text-2xl font-semibold">演示登录</h2>
-          <p className="mt-1 text-sm text-slate-500">选择角色即可进入对应工作台。</p>
+          <p className="mt-1 text-sm text-slate-500">选择角色即可进入对应工作台，无需密码。</p>
           <label className="mt-6 block text-sm font-medium">用户名</label>
           <input
             className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-cyan-500"
             value={username}
             onChange={(event) => setUsername(event.target.value)}
           />
-          <label className="mt-4 block text-sm font-medium">角色</label>
+          <label className="mt-4 block text-sm font-medium">选择角色</label>
           <select
             className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-cyan-500"
             value={role}
             onChange={(event) => setRole(event.target.value)}
           >
-            <option value="admin">admin 管理员</option>
-            <option value="annotator">annotator 标注员</option>
-            <option value="reviewer">reviewer 审核员</option>
+            <option value="admin">admin - 管理员（创建任务、查看统计）</option>
+            <option value="annotator">annotator - 标注员（填写标注表单）</option>
+            <option value="reviewer">reviewer - 审核员（AI 预审 + 人工复核）</option>
           </select>
           {error && <p className="mt-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
           <button className="mt-6 w-full rounded-xl bg-cyan-600 px-4 py-3 font-semibold text-white hover:bg-cyan-700">
-            进入工作台
+            进入工作台 →
           </button>
         </form>
       </div>
@@ -162,21 +182,35 @@ function Workspace({ session, onLogout }) {
     <main className="min-h-screen px-4 py-6 text-slate-900 md:px-8">
       <header className="mx-auto flex max-w-7xl flex-col gap-4 rounded-3xl bg-white p-5 shadow-sm md:flex-row md:items-center md:justify-between">
         <div>
-          <p className="text-sm text-slate-500">当前角色：{session.user.role}</p>
+          <p className="text-sm text-slate-500">当前角色：{session.user.role === 'admin' ? '管理员' : session.user.role === 'annotator' ? '标注员' : '审核员'}</p>
           <h1 className="text-2xl font-bold">LabelHub AI 工作台</h1>
         </div>
         <div className="flex items-center gap-3">
           <span className="rounded-full bg-slate-100 px-4 py-2 text-sm">{session.user.username}</span>
           <button onClick={onLogout} className="rounded-full border border-slate-200 px-4 py-2 text-sm hover:bg-slate-50">
-            退出
+            退出登录
           </button>
         </div>
       </header>
 
       <section className="mx-auto mt-6 max-w-7xl">
         <Dashboard data={dashboard} />
-        {message && <p className="mt-4 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-800">{message}</p>}
-        {loading && <p className="mt-4 text-sm text-slate-500">正在刷新数据...</p>}
+        {message && (
+          <div className={`feedback-enter mt-4 flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-medium ${
+            message.includes('失败') || message.includes('错误')
+              ? 'bg-red-50 text-red-700'
+              : 'bg-emerald-50 text-emerald-700'
+          }`}>
+            <span>{message.includes('失败') || message.includes('错误') ? '✗' : '✓'}</span>
+            {message}
+          </div>
+        )}
+        {loading && (
+          <div className="mt-4 flex items-center gap-2 text-sm text-slate-500">
+            <span className="spinner"></span>
+            正在加载数据...
+          </div>
+        )}
       </section>
 
       <section className="mx-auto mt-6 max-w-7xl">
@@ -192,21 +226,24 @@ function Workspace({ session, onLogout }) {
 
 function Dashboard({ data }) {
   const cards = [
-    ['任务总数', data?.total ?? 0],
-    ['待标注', data?.pendingAnnotation ?? 0],
-    ['待审核', data?.pendingReview ?? 0],
-    ['已通过', data?.approved ?? 0],
-    ['已驳回', data?.rejected ?? 0],
-    ['通过率', `${data?.passRate ?? 0}%`],
-    ['AI 风险提示数', data?.aiRiskCount ?? 0],
-    ['待处理任务数', data?.pendingTotal ?? 0]
+    ['📊', '任务总数', data?.total ?? 0, 'bg-slate-50'],
+    ['📝', '待标注', data?.pendingAnnotation ?? 0, 'bg-blue-50'],
+    ['🔍', '待审核', data?.pendingReview ?? 0, 'bg-amber-50'],
+    ['✅', '已通过', data?.approved ?? 0, 'bg-emerald-50'],
+    ['❌', '已驳回', data?.rejected ?? 0, 'bg-red-50'],
+    ['📈', '通过率', `${data?.passRate ?? 0}%`, 'bg-cyan-50'],
+    ['⚠️', 'AI 风险提示', data?.aiRiskCount ?? 0, 'bg-orange-50'],
+    ['⏳', '待处理', data?.pendingTotal ?? 0, 'bg-violet-50']
   ];
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      {cards.map(([label, value]) => (
-        <div key={label} className="rounded-2xl bg-white p-5 shadow-sm">
-          <p className="text-sm text-slate-500">{label}</p>
+    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      {cards.map(([icon, label, value, bg]) => (
+        <div key={label} className={`rounded-2xl ${bg} p-4 shadow-sm`}>
+          <div className="flex items-center gap-2">
+            <span className="text-lg">{icon}</span>
+            <p className="text-sm text-slate-500">{label}</p>
+          </div>
           <p className="mt-2 text-3xl font-bold text-slate-950">{value}</p>
         </div>
       ))}
@@ -231,7 +268,7 @@ function AdminPanel({ tasks, onCreated, setMessage }) {
       setTitle('');
       setText('');
       setSchema(schemaExample);
-      setMessage('任务创建成功');
+      setMessage('任务创建成功，已进入待标注队列');
       onCreated();
     } catch (err) {
       setMessage(`创建失败：${err.message}`);
@@ -242,23 +279,24 @@ function AdminPanel({ tasks, onCreated, setMessage }) {
     <div className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
       <form onSubmit={createTask} className="rounded-3xl bg-white p-6 shadow-sm">
         <h2 className="text-xl font-semibold">创建标注任务</h2>
+        <p className="mt-1 text-sm text-slate-500">定义任务内容和标注表单结构</p>
         <label className="mt-5 block text-sm font-medium">任务标题</label>
-        <input className="mt-2 input" value={title} onChange={(event) => setTitle(event.target.value)} />
+        <input className="mt-2 input" placeholder="例如：电商评论情感分类" value={title} onChange={(event) => setTitle(event.target.value)} />
         <label className="mt-4 block text-sm font-medium">待标注文本</label>
-        <textarea className="mt-2 input min-h-28" value={text} onChange={(event) => setText(event.target.value)} />
-        <label className="mt-4 block text-sm font-medium">动态表单 schema</label>
+        <textarea className="mt-2 input min-h-28" placeholder="粘贴需要标注的原始文本..." value={text} onChange={(event) => setText(event.target.value)} />
+        <label className="mt-4 block text-sm font-medium">动态表单 Schema</label>
         <textarea
           className="mt-2 input min-h-72 font-mono text-sm"
           value={schema}
           onChange={(event) => setSchema(event.target.value)}
         />
-        <p className="mt-2 text-xs text-slate-500">字段支持 text、textarea、select、number、checkbox。</p>
+        <p className="mt-2 text-xs text-slate-500">字段类型支持：text、textarea、select、number、checkbox</p>
         <button className="mt-5 rounded-xl bg-slate-950 px-5 py-3 font-semibold text-white hover:bg-slate-800">
           创建任务
         </button>
       </form>
 
-      <TaskList title="全部任务" tasks={tasks} />
+      <TaskList title="全部任务列表" tasks={tasks} />
     </div>
   );
 }
@@ -268,7 +306,7 @@ function AnnotatorPanel({ tasks, onSubmitted, setMessage }) {
 
   return (
     <div className="grid gap-6 lg:grid-cols-2">
-      {availableTasks.length === 0 && <EmptyState text="暂无待标注任务" />}
+      {availableTasks.length === 0 && <EmptyState text="暂无可标注任务，等待管理员创建新任务" icon="📋" />}
       {availableTasks.map((task) => (
         <AnnotationCard key={task.id} task={task} onSubmitted={onSubmitted} setMessage={setMessage} />
       ))}
@@ -292,7 +330,7 @@ function AnnotationCard({ task, onSubmitted, setMessage }) {
         method: 'POST',
         body: JSON.stringify({ annotation: form })
       });
-      setMessage('标注已提交，AI 质检结果已生成');
+      setMessage('标注提交成功，AI 预审已完成');
       onSubmitted();
     } catch (err) {
       setMessage(`提交失败：${err.message}`);
@@ -312,7 +350,7 @@ function AnnotationCard({ task, onSubmitted, setMessage }) {
         ))}
       </div>
       <button className="mt-5 rounded-xl bg-cyan-600 px-5 py-3 font-semibold text-white hover:bg-cyan-700">
-        提交标注
+        提交标注并触发 AI 质检
       </button>
     </form>
   );
@@ -322,7 +360,7 @@ function ReviewerPanel({ tasks, onReviewed, setMessage }) {
   const reviewTasks = tasks.filter((task) => task.status === 'pending_review');
   return (
     <div className="grid gap-6 lg:grid-cols-2">
-      {reviewTasks.length === 0 && <EmptyState text="暂无待审核任务" />}
+      {reviewTasks.length === 0 && <EmptyState text="暂无可审核任务，等待标注员提交标注结果" icon="🔍" />}
       {reviewTasks.map((task) => (
         <ReviewCard key={task.id} task={task} onReviewed={onReviewed} setMessage={setMessage} />
       ))}
@@ -340,7 +378,7 @@ function ReviewCard({ task, onReviewed, setMessage }) {
         method: 'POST',
         body: JSON.stringify({ decision, comment })
       });
-      setMessage(decision === 'approved' ? '审核已通过' : '任务已驳回');
+      setMessage(decision === 'approved' ? '审核通过，任务已归档' : '已驳回，任务将返回标注员修改');
       onReviewed();
     } catch (err) {
       setMessage(`审核失败：${err.message}`);
@@ -357,10 +395,10 @@ function ReviewCard({ task, onReviewed, setMessage }) {
       <textarea className="mt-2 input min-h-24" value={comment} onChange={(event) => setComment(event.target.value)} />
       <div className="mt-5 flex gap-3">
         <button onClick={() => review('approved')} className="rounded-xl bg-emerald-600 px-5 py-3 font-semibold text-white hover:bg-emerald-700">
-          通过
+          ✓ 审核通过
         </button>
         <button onClick={() => review('rejected')} className="rounded-xl bg-red-600 px-5 py-3 font-semibold text-white hover:bg-red-700">
-          驳回
+          ✗ 驳回修改
         </button>
       </div>
     </article>
@@ -412,7 +450,7 @@ function TaskList({ title, tasks }) {
     <section className="rounded-3xl bg-white p-6 shadow-sm">
       <h2 className="text-xl font-semibold">{title}</h2>
       <div className="mt-5 space-y-4">
-        {tasks.length === 0 && <EmptyState text="暂无任务" />}
+        {tasks.length === 0 && <EmptyState text="暂无任务，请创建第一条标注任务" icon="📝" />}
         {tasks.map((task) => (
           <article key={task.id} className="rounded-2xl border border-slate-100 p-4">
             <TaskHeader task={task} />
@@ -432,8 +470,8 @@ function TaskHeader({ task }) {
         <h3 className="font-semibold text-slate-950">{task.title}</h3>
         <p className="mt-1 text-xs text-slate-500">ID: {task.id}</p>
       </div>
-      <span className="shrink-0 rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
-        {statusText[task.status] || task.status}
+      <span className="shrink-0 inline-flex items-center gap-1 rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
+        {statusIcon[task.status]} {statusText[task.status] || task.status}
       </span>
     </div>
   );
@@ -487,8 +525,13 @@ function KeyValueBlock({ title, data }) {
   );
 }
 
-function EmptyState({ text }) {
-  return <div className="rounded-3xl border border-dashed border-slate-200 bg-white p-8 text-center text-slate-500">{text}</div>;
+function EmptyState({ text, icon = '📭' }) {
+  return (
+    <div className="rounded-3xl border border-dashed border-slate-200 bg-white p-8 text-center">
+      <p className="text-3xl">{icon}</p>
+      <p className="mt-3 text-sm text-slate-500">{text}</p>
+    </div>
+  );
 }
 
 export default App;
