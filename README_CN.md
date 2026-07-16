@@ -62,7 +62,7 @@ Dashboard 统计更新
 
 ```bash
 cd backend
-npm install
+npm ci
 npm run dev
 ```
 
@@ -72,11 +72,13 @@ npm run dev
 
 ```bash
 cd frontend
-npm install
+npm ci
 npm run dev
 ```
 
 前端默认运行在 `http://localhost:5173`，Vite 已配置 `/api` 代理到后端。
+
+后端首次启动时，会根据 `backend/src/dataStore.js` 中的 seed 数据生成 `backend/data/tasks.json`。标注和审核操作会更新这个运行时文件。该文件已被 Git 忽略，也不会进入后端 Docker 构建上下文。
 
 ## Docker 运行
 
@@ -88,7 +90,7 @@ docker compose up --build
 
 访问 `http://localhost:5173`。
 
-这是本地演示部署方案，后端 JSON 数据文件挂载在 `backend/data/tasks.json`，重启容器后数据仍保留。
+这是本地演示部署方案。Compose 会把 `./backend/data` 挂载到容器的 `/app/data`，因此生成的 `tasks.json` 在容器重启后仍会保留，但不会提交到仓库。
 
 ## Demo 角色
 
@@ -114,7 +116,7 @@ docker compose up --build
    - `possibleIssue`：可能存在的问题
    - `suggestion`：修改建议
 
-这不是为了假装真实 AI，而是为了保留 AI 审核层的接口位置。后续可以替换为 OpenAI、DeepSeek、Ollama 等真实大模型，或者自定义规则引擎。
+这不是为了假装真实 AI，而是为了保留 AI 审核层的接口位置。后续如果接入 OpenAI、DeepSeek、Ollama 等真实模型，还需要增加异步 provider 调用、密钥配置、错误处理和回退策略；当前结构化输出格式可以继续复用。
 
 ## 当前边界
 
@@ -156,7 +158,7 @@ docker compose up --build
 > 独立完成 AI 辅助标注审核系统原型，使用 React + Vite + Tailwind 构建前端，Node.js + Express 构建后端。设计动态 Schema 驱动的标注表单系统，实现三角色（管理员/标注员/审核员）工作流，集成 mock AI 预审层提供结构化风险评估。支持 Docker 一键部署。
 
 **面试展开版**：
-> 这个项目想解决的是"AI 如何辅助人工审核"的问题。我设计了一个三角色工作流：管理员通过 JSON schema 定义标注表单，标注员填写后系统自动触发 AI 预审，审核员在同一页面查看原文、标注结果和 AI 建议再做判断。AI 预审当前是 mock 实现，但接口设计上可以平滑替换为真实大模型。技术栈是 React + Express 前后端分离，数据用 JSON 文件存储，Docker Compose 做本地部署。
+> 这个项目想解决的是"AI 如何辅助人工审核"的问题。我设计了一个三角色工作流：管理员通过 JSON schema 定义标注表单，标注员填写后系统自动触发 AI 预审，审核员在同一页面查看原文、标注结果和 AI 建议再做判断。AI 预审当前是规则驱动的 mock 实现；接入真实模型还需要补充 provider、配置和异常处理。技术栈是 React + Express 前后端分离，数据用 JSON 文件存储，Docker Compose 做本地部署。
 
 ## Schema 示例
 
@@ -193,7 +195,7 @@ docker compose up --build
 
 ## 项目截图
 
-截图可放置在 `docs/images/` 目录下。
+截图位于 `docs/images/` 目录下。
 
 ### 登录页
 
@@ -216,3 +218,7 @@ docker compose up --build
 - [English README](README.md)
 - [演示脚本](docs/demo-script.md)
 - [项目总结](docs/project-summary.md)
+
+## 许可证
+
+本项目采用 [MIT License](LICENSE)。

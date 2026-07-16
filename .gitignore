@@ -32,3 +32,4 @@ temp/
 
 # Docker/runtime local data
 *.pid
+/backend/data/tasks.json

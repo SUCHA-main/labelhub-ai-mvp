@@ -82,7 +82,7 @@ Backend:
 
 ```bash
 cd backend
-npm install
+npm ci
 npm run dev
 ```
 
@@ -90,11 +90,13 @@ Frontend:
 
 ```bash
 cd frontend
-npm install
+npm ci
 npm run dev
 ```
 
 Open `http://localhost:5173`. The Vite dev server proxies `/api` requests to `http://localhost:4000`.
+
+On the first backend start, the seed data in `backend/src/dataStore.js` creates `backend/data/tasks.json`. Annotation and review actions update this runtime file. It is ignored by Git and excluded from the backend Docker build context.
 
 ### Docker
 
@@ -103,6 +105,8 @@ docker compose up --build
 ```
 
 Open `http://localhost:5173`.
+
+Compose bind-mounts `./backend/data` to `/app/data`, so the generated `tasks.json` persists across container restarts without being committed to the repository.
 
 ## Demo Roles
 
@@ -126,7 +130,7 @@ labelhub-ai-mvp/
 │   │   ├── dataStore.js       # JSON file read/write + seed data
 │   │   └── mockAIReview.js    # Rule-based mock AI reviewer
 │   ├── data/
-│   │   └── tasks.json         # Task data persistence
+│   │   └── tasks.json         # Generated runtime data (Git-ignored)
 │   └── Dockerfile
 ├── frontend/
 │   ├── src/
@@ -146,7 +150,7 @@ labelhub-ai-mvp/
 
 ## Screenshots
 
-Screenshots can be added under `docs/images/`.
+Screenshots are stored under `docs/images/`.
 
 ### Login Page
 
@@ -199,3 +203,7 @@ This is an **MVP prototype**, not a production system:
 - [Chinese README (中文文档)](README_CN.md)
 - [Demo Script (演示脚本)](docs/demo-script.md)
 - [Project Summary (项目总结)](docs/project-summary.md)
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
